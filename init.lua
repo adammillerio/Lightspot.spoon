@@ -79,7 +79,9 @@ function Lightspot:_chooserChoices()
 end
 
 -- Completion function for chooser, which ensures the selected app if it
--- is not already in focus.
+-- is not already in focus, or does a Spotlight-like fallback, which searches for
+-- any matching hs.applications installed on the system that match the provided
+-- query, and opening them.
 -- Input is the table representing the choice from the Chooser.
 function Lightspot:_chooserCompletion(choice)
     if choice == nil then
@@ -87,8 +89,60 @@ function Lightspot:_chooserCompletion(choice)
         return
     end
 
-    -- Ensure the app.
-    EnsureApp:ensureApp(choice.app)
+    if choice.app then
+        -- Ensure the app.
+        EnsureApp:ensureApp(choice.app)
+    elseif choice.text then
+        -- This is a default invocation and there is no ensured app with this name.
+
+        -- Get the user's input text.
+        local appName = choice.text
+
+        self.logger.vf(
+            "No EnsureApp config for app %s, falling back to Spotlight-like completion",
+            appName)
+
+        -- Search for any applications matching this query.
+        -- This works better with the following enabled in your init.lua:
+        -- hs.application.enableSpotlightForNameSearches(true)
+        local foundApps = {hs.application.find(appName)}
+        if foundApps then
+            for _, foundApp in ipairs(foundApps) do
+                self.logger.vf("Found app for Spotlight-like query: %s",
+                               foundApp)
+
+                -- For some reason, I am getting hs.window back in some cases,
+                -- so I have to do a "type" check here.
+                -- TODO: Investigate and file issue if there is one.
+                if getmetatable(foundApp).__name == "hs.window" then
+                    self.logger.wf("Found app is actually hs.window, skipping")
+                    goto continue
+                end
+
+                local foundAppName = foundApp:name()
+
+                if foundApp:isRunning() then
+                    -- The app we found is running, so just activate it's main window.
+                    -- TODO: Make this ensure it in the current space even without config.
+                    self.logger.vf(
+                        "Found app %s is running, activating main window",
+                        foundAppName)
+                    foundApp:activate()
+                else
+                    -- The app we found isn't running, open it.
+                    self.logger.vf("Found app %s is not running, opening",
+                                   foundAppName)
+                    hs.application.open(foundAppName)
+                end
+
+                ::continue::
+            end
+        else
+            -- Nothing to find, give up.
+            self.logger.wf("Couldn't find any apps in Spotlight-like query: %s",
+                           appName)
+        end
+    end
 end
 
 -- Lightspot chooser.
@@ -132,6 +186,9 @@ function Lightspot:start()
     self.chooser = hs.chooser.new(
                        self:_instanceCallback(self._chooserCompletion))
     self.chooser:choices(self:_instanceCallback(self._chooserChoices))
+    -- Run callback even if the choice was not "valid", which triggers a
+    -- "Spotlight-like" fall through for querying applications.
+    self.chooser:enableDefaultForQuery(true)
 end
 
 --- Lightspot:stop()
