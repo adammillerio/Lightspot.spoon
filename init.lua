@@ -84,6 +84,7 @@ end
 -- query, and opening them.
 -- Input is the table representing the choice from the Chooser.
 function Lightspot:_chooserCompletion(choice)
+    print("completing")
     if choice == nil then
         self.logger.vf("No choice made, skipping")
         return
@@ -116,26 +117,13 @@ function Lightspot:_chooserCompletion(choice)
                 -- TODO: Investigate and file issue if there is one.
                 if getmetatable(foundApp).__name == "hs.window" then
                     self.logger.wf("Found app is actually hs.window, skipping")
-                    goto continue
+                    return
                 end
 
                 local foundAppName = foundApp:name()
 
-                if foundApp:isRunning() then
-                    -- The app we found is running, so just activate it's main window.
-                    -- TODO: Make this ensure it in the current space even without config.
-                    self.logger.vf(
-                        "Found app %s is running, activating main window",
-                        foundAppName)
-                    foundApp:activate()
-                else
-                    -- The app we found isn't running, open it.
-                    self.logger.vf("Found app %s is not running, opening",
-                                   foundAppName)
-                    hs.application.open(foundAppName)
-                end
-
-                ::continue::
+                EnsureApp:ensureApp(foundAppName)
+                return
             end
         else
             -- Nothing to find, give up.
