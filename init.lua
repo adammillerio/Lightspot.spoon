@@ -138,7 +138,6 @@ end
 function Lightspot:_showChooser()
     if not self.chooser:isVisible() then
         -- Update row count, clear previous input, refresh choices, and show chooser.
-        -- self.spaceChooser:rows(#self.orderedSpaces)
         self.chooser:query(nil)
         self.chooser:refreshChoicesCallback()
         self.chooser:show()
