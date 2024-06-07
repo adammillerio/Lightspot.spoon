@@ -11,7 +11,7 @@ Lightspot.__index = Lightspot
 
 -- Metadata
 Lightspot.name = "Lightspot"
-Lightspot.version = "0.0.1"
+Lightspot.version = "0.0.2"
 Lightspot.author = "Adam Miller <adam@adammiller.io>"
 Lightspot.homepage = "https://github.com/adammillerio/Lightspot.spoon"
 Lightspot.license = "MIT - https://opensource.org/licenses/MIT"
@@ -84,7 +84,6 @@ end
 -- query, and opening them.
 -- Input is the table representing the choice from the Chooser.
 function Lightspot:_chooserCompletion(choice)
-    print("completing")
     if choice == nil then
         self.logger.vf("No choice made, skipping")
         return
@@ -190,7 +189,12 @@ end
 ---
 --- Notes:
 ---  * Stops the hs.chooser.
-function Lightspot:stop() self.logger.v("Stopping Lightspot") end
+function Lightspot:stop()
+    self.logger.v("Stopping Lightspot")
+
+    self.logger.v("Stopping chooser query delay timer")
+    self.chooserQueryChangedDelayTimer:stop()
+end
 
 function Lightspot:bindHotkeys(mapping)
     -- Bind method for showing the chooser.
