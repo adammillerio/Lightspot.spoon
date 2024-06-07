@@ -11,7 +11,7 @@ Lightspot.__index = Lightspot
 
 -- Metadata
 Lightspot.name = "Lightspot"
-Lightspot.version = "0.0.1"
+Lightspot.version = "0.0.2"
 Lightspot.author = "Adam Miller <adam@adammiller.io>"
 Lightspot.homepage = "https://github.com/adammillerio/Lightspot.spoon"
 Lightspot.license = "MIT - https://opensource.org/licenses/MIT"
