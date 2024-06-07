@@ -84,7 +84,6 @@ end
 -- query, and opening them.
 -- Input is the table representing the choice from the Chooser.
 function Lightspot:_chooserCompletion(choice)
-    print("completing")
     if choice == nil then
         self.logger.vf("No choice made, skipping")
         return
@@ -190,7 +189,12 @@ end
 ---
 --- Notes:
 ---  * Stops the hs.chooser.
-function Lightspot:stop() self.logger.v("Stopping Lightspot") end
+function Lightspot:stop()
+    self.logger.v("Stopping Lightspot")
+
+    self.logger.v("Stopping chooser query delay timer")
+    self.chooserQueryChangedDelayTimer:stop()
+end
 
 function Lightspot:bindHotkeys(mapping)
     -- Bind method for showing the chooser.
